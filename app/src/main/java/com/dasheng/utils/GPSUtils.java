@@ -20,10 +20,12 @@ import java.util.List;
  * 获取用户的地理位置
  */
 public class GPSUtils {
+    private static final String TAG = "GPSUtils";
 
     private static GPSUtils instance;
     private Context mContext;
     private LocationManager locationManager;
+    private String locationProvider = null;
 
     private GPSUtils(Context context) {
         this.mContext = context;
@@ -42,16 +44,13 @@ public class GPSUtils {
      * @return
      */
     public String getLngAndLat(OnLocationResultListener onLocationResultListener) {
-        double latitude = 0.0;
-        double longitude = 0.0;
-
         mOnLocationListener = onLocationResultListener;
 
-        String locationProvider = null;
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         //获取所有可用的位置提供器
         List<String> providers = locationManager.getProviders(true);
 
+        //locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (providers.contains(LocationManager.GPS_PROVIDER)) {
             //如果是GPS
             locationProvider = LocationManager.GPS_PROVIDER;
@@ -68,7 +67,7 @@ public class GPSUtils {
         //获取Location
         if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d("GPSUtils", "获取定位权限不足");
+            Log.d(TAG, "获取定位权限不足");
             return null;
         }
         Location location = locationManager.getLastKnownLocation(locationProvider);
@@ -96,13 +95,13 @@ public class GPSUtils {
         // Provider被enable时触发此函数，比如GPS被打开
         @Override
         public void onProviderEnabled(String provider) {
-
+            Log.d(TAG, "Provider Enabled："+provider);
         }
 
         // Provider被disable时触发此函数，比如GPS被关闭
         @Override
         public void onProviderDisabled(String provider) {
-
+            Log.d(TAG, "Provider Disabled："+provider);
         }
 
         //当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发

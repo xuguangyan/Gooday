@@ -1,6 +1,5 @@
 package com.dasheng.gooday;
 
-import android.Manifest;
 import android.app.ActivityManager;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
@@ -9,12 +8,8 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -57,62 +52,30 @@ public class MyJobService extends JobService {
         boolean isForegroundServiceRun = isServiceRunning(this, ForegroundService.class.getName());
         if (!isForegroundServiceRun) {
             Log.e(TAG, "restart");
-            startService(new Intent(this, ForegroundService.class));
+            // startService(new Intent(this, ForegroundService.class));
         } else {
             Log.e(TAG, "Running");
         }
 
-        double latitude = 0.0;
-        double longitude = 0.0;
+        instGps.getLngAndLat(new GPSUtils.OnLocationResultListener(){
+            @Override
+            public void onLocationResult(Location location) {
+                //输入经纬度
+                Log.d(TAG+"location-1", location.getLongitude() + " " + location.getLatitude() + "");
 
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.d("GPSUtils", "获取定位权限不足");
-                return false;
+                // 广播位置信息
+                Intent intent = new Intent();
+                intent.putExtra("location", location);
+                intent.setAction("location.reportsucc");
+                sendBroadcast(intent);
             }
-            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location != null) {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
+
+            @Override
+            public void OnLocationChange(Location location) {
+                // Log.d(TAG+"location-2", location.getLongitude() + " " + location.getLatitude() + "");
             }
-        } else {
-            LocationListener locationListener = new LocationListener() {
+        });
 
-                // Provider的状态在可用、暂时不可用和无服务三个状态直接切换时触发此函数
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) { }
-
-                // Provider被enable时触发此函数，比如GPS被打开
-                @Override
-                public void onProviderEnabled(String provider) { }
-
-                // Provider被disable时触发此函数，比如GPS被关闭
-                @Override
-                public void onProviderDisabled(String provider) { }
-
-                //当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发
-                @Override
-                public void onLocationChanged(Location location) {
-                    if (location != null) {
-                        Log.e("Map", "Location changed : Lat: "
-                                + location.getLatitude() + " Lng: "
-                                + location.getLongitude());
-                    }
-                }
-            };
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.d("GPSUtils", "获取定位权限不足");
-                return false;
-            }
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, locationListener);
-            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            //获取Location
-            if(location != null){
-                latitude = location.getLatitude(); //经度
-                longitude = location.getLongitude(); //纬度
-            }
-        }
         return false;
     }
 
@@ -132,4 +95,5 @@ public class MyJobService extends JobService {
 
         return false;
     }
+
 }
