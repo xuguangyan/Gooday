@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dasheng.gooday">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <service android:name=".MyJobService" android:enabled="true"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
+
+        <service android:name=".ForegroundService">
+            <intent-filter>
+                <action android:name="com.dasheng.gooday.foregroundService" />
+            </intent-filter>
+        </service>
+        <receiver android:name=".BootBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+    <!--允许程序在手机屏幕关闭后后台进程仍然运行-->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <!--允许程序开机自动运行-->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <!--通过WiFi或基站粗略定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--通过GPS精良定位-->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!--获取网络信息状态-->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!--获取当前WiFi接入状态-->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <!--访问网络连接（可能产生GPRS流量）-->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!--允许访问摄像头拍照-->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!--录制声音通过麦克风-->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!--允许写入外部存储-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!--允许振动-->
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
+    <!--允许应用访问联系人通讯录信息-->
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
+    <!--读取短信内容-->
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <!--接收短信-->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <!--发送短信-->
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+
+    <!--允许连接配对过的蓝牙设备-->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <!--允许发现和配对新的蓝牙设备-->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+</manifest>
