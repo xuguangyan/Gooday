@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/text1"
-            android:text="aaa"
+            android:text="@string/hello"
             android:textSize="24dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

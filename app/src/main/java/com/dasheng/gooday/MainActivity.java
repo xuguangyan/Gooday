@@ -1,8 +1,5 @@
 package com.dasheng.gooday;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,16 +11,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if(ForegroundService.instance != null) {
+            startActivity(new Intent(this,HomeActivity.class));
+            return ;
+        }
         Log.d("main life", "onCreate");
 
         super.onCreate(savedInstanceState);
-        intent = new Intent(MainActivity.this, ForegroundService.class);
 
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationChannel channel = new NotificationChannel("com.dasheng.gooday", "gooday",
-                NotificationManager.IMPORTANCE_LOW);
-        manager.createNotificationChannel(channel);
-
+//        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 //        Notification notification = new NotificationCompat.Builder(this, "com.dasheng.gooday")
 //                .setContentTitle("通知标题")
 //                .setContentText("通知内容..")
@@ -31,8 +27,20 @@ public class MainActivity extends AppCompatActivity {
 //                .setDefaults(Notification.DEFAULT_SOUND).build();
 //        manager.notify(10, notification);
 
-        // startService(intent);
+        intent = new Intent(MainActivity.this, ForegroundService.class);
+        startService(intent);
         MyJobService.startJob(this);
+
+//        if (Build.VERSION.SDK_INT >= 23) {
+//            if (!Settings.canDrawOverlays(this)) {
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivityForResult(intent, 1);
+//            } else {
+//                Context appContext = getApplicationContext();
+//                FloatViewUtils.createFloatView(appContext);
+//            }
+//        }
         startActivity(new Intent(this,HomeActivity.class));
     }
 
