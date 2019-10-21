@@ -2,17 +2,18 @@ package com.dasheng.utils;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.dasheng.model.ServiceResult;
+
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,7 +26,10 @@ public class GPSUtils {
     private static GPSUtils instance;
     private Context mContext;
     private LocationManager locationManager;
-    private String locationProvider = null;
+    private String[] providerArr = {LocationManager.GPS_PROVIDER
+            , LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER};
+    private Integer index = 0;
+    private boolean changeWay = true;
 
     private GPSUtils(Context context) {
         this.mContext = context;
@@ -39,6 +43,19 @@ public class GPSUtils {
     }
 
     /**
+     * 判断定位权限
+     */
+    public boolean checkPermission() {
+        //获取Location
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "获取定位权限不足");
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 获取经纬度
      *
      * @return
@@ -46,43 +63,52 @@ public class GPSUtils {
     public String getLngAndLat(OnLocationResultListener onLocationResultListener) {
         mOnLocationListener = onLocationResultListener;
 
+        // 判断定位权限
+        checkPermission();
+
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
         //获取所有可用的位置提供器
         List<String> providers = locationManager.getProviders(true);
 
-        //locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        if (providers.contains(LocationManager.GPS_PROVIDER)) {
-            //如果是GPS
-            locationProvider = LocationManager.GPS_PROVIDER;
-        } else if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-            //如果是Network
-            locationProvider = LocationManager.NETWORK_PROVIDER;
-        } else {
-            Intent i = new Intent();
-            i.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            mContext.startActivity(i);
-            return null;
-        }
+        String locationProvider = providerArr[index];
+        //如果不是Gps或Network
+        if (!providers.contains(LocationManager.GPS_PROVIDER)
+                && !providers.contains(LocationManager.NETWORK_PROVIDER)) {
+//            Intent i = new Intent();
+//            i.setAction(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//            mContext.startActivity(i);
 
-        //获取Location
-        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "获取定位权限不足");
+            if (mOnLocationListener != null) {
+                ServiceResult sr = new ServiceResult();
+                sr.setErrorCode(-1);
+                sr.setErrorMsg("没有可用的定位提供器：" + Arrays.toString(providerArr));
+                mOnLocationListener.onLocationResult(null, sr);
+            }
             return null;
         }
         Location location = locationManager.getLastKnownLocation(locationProvider);
-        if (location != null) {
-            //不为空,显示地理位置经纬度
-            if (mOnLocationListener != null) {
-                mOnLocationListener.onLocationResult(location);
+        if (mOnLocationListener != null) {
+            ServiceResult sr = new ServiceResult();
+            if (location == null) {
+                sr.setErrorCode(-1);
+                sr.setErrorMsg(providerArr[index] + "获取定位失败");
             }
-
+            mOnLocationListener.onLocationResult(location, sr);
         }
-        //监视地理位置变化
-        locationManager.requestLocationUpdates(locationProvider, 3000, 1, locationListener);
+        if (location == null) {
+            // 切换定位方式（下次再尝试）
+            changeWay = true;
+            index = (index + 1) % 3;
+            locationProvider = providerArr[index];
+        }
+        if (changeWay) {
+            //监视地理位置变化
+            removeListener();
+            locationManager.requestLocationUpdates(locationProvider, 3000, 1, locationListener);
+            changeWay = false;
+        }
         return null;
     }
-
 
     public LocationListener locationListener = new LocationListener() {
 
@@ -95,20 +121,25 @@ public class GPSUtils {
         // Provider被enable时触发此函数，比如GPS被打开
         @Override
         public void onProviderEnabled(String provider) {
-            Log.d(TAG, "Provider Enabled："+provider);
+            Log.d(TAG, "Provider Enabled：" + provider);
         }
 
         // Provider被disable时触发此函数，比如GPS被关闭
         @Override
         public void onProviderDisabled(String provider) {
-            Log.d(TAG, "Provider Disabled："+provider);
+            Log.d(TAG, "Provider Disabled：" + provider);
         }
 
         //当坐标改变时触发此函数，如果Provider传进相同的坐标，它就不会被触发
         @Override
         public void onLocationChanged(Location location) {
             if (mOnLocationListener != null) {
-                mOnLocationListener.OnLocationChange(location);
+                ServiceResult sr = new ServiceResult();
+                if (location == null) {
+                    sr.setErrorCode(-1);
+                    sr.setErrorMsg(providerArr[index] + "更新定位失败");
+                }
+                mOnLocationListener.OnLocationChange(location, sr);
             }
         }
     };
@@ -120,8 +151,20 @@ public class GPSUtils {
     private OnLocationResultListener mOnLocationListener;
 
     public interface OnLocationResultListener {
-        void onLocationResult(Location location);
+        /**
+         * 返回定位结果
+         *
+         * @param location 位置对象
+         * @param sr       操作结果
+         */
+        void onLocationResult(Location location, ServiceResult sr);
 
-        void OnLocationChange(Location location);
+        /**
+         * 更新定位信息
+         *
+         * @param location 位置对象
+         * @param sr       操作结果
+         */
+        void OnLocationChange(Location location, ServiceResult sr);
     }
 }

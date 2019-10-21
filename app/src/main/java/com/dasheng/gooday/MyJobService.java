@@ -13,6 +13,7 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.dasheng.model.ServiceResult;
 import com.dasheng.utils.GPSUtils;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class MyJobService extends JobService {
 
     public static void startJob(Context context) {
         instGps = GPSUtils.getInstance(context);
+        instGps.checkPermission();
 
         JobScheduler jobScheduler = (JobScheduler) context.getSystemService(
                 Context.JOB_SCHEDULER_SERVICE);
@@ -59,20 +61,28 @@ public class MyJobService extends JobService {
 
         instGps.getLngAndLat(new GPSUtils.OnLocationResultListener(){
             @Override
-            public void onLocationResult(Location location) {
-                //输入经纬度
-                Log.d(TAG+"location-1", location.getLongitude() + " " + location.getLatitude() + "");
+            public void onLocationResult(Location location, ServiceResult sr) {
+                if(sr.getErrorCode()==0) {
+                    //输入经纬度
+                    Log.d(TAG + " location-1", location.getProvider() + "：" + location.getLongitude() + " " + location.getLatitude() + "");
 
-                // 广播位置信息
-                Intent intent = new Intent();
-                intent.putExtra("location", location);
-                intent.setAction("location.reportsucc");
-                sendBroadcast(intent);
+                    // 广播位置信息
+                    Intent intent = new Intent();
+                    intent.putExtra("location", location);
+                    intent.setAction("location.reportsucc");
+                    sendBroadcast(intent);
+                }else{
+                    Log.e(TAG, sr.getErrorMsg());
+                }
             }
 
             @Override
-            public void OnLocationChange(Location location) {
-                // Log.d(TAG+"location-2", location.getLongitude() + " " + location.getLatitude() + "");
+            public void OnLocationChange(Location location, ServiceResult sr) {
+                if(sr.getErrorCode()==0) {
+                    Log.d(TAG + " location-2", location.getProvider() + "：" + location.getLongitude() + " " + location.getLatitude() + "");
+                }else{
+                    Log.e(TAG, sr.getErrorMsg());
+                }
             }
         });
 

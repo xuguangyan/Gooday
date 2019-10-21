@@ -75,7 +75,7 @@ public class ForegroundService extends Service {
         super.onStartCommand(intent, flags, startId);
         //play.setLooping(false);
         //play.start();
-        Toast.makeText(this, "启动后台服务程序，播放音乐...", Toast.LENGTH_LONG ).show();
+        Toast.makeText(this, "启动后台服务程序", Toast.LENGTH_LONG ).show();
         return START_STICKY;
     }
 
