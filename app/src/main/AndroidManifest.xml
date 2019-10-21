@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- 录制声音通过麦克风 -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 允许写入外部存储 -->
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 允许振动 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/> <!-- 读取设备信息-->
     <uses-permission android:name="android.permission.READ_CONTACTS" /> <!-- 允许应用访问联系人通讯录信息 -->
     <uses-permission android:name="android.permission.READ_SMS" /> <!-- 读取短信内容 -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" /> <!-- 接收短信 -->
