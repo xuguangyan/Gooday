@@ -19,11 +19,25 @@
             android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnTest"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="测试" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnTest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="连接登录" />
+
+                <Button
+                    android:id="@+id/btnMsg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="发送消息" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/text1"
